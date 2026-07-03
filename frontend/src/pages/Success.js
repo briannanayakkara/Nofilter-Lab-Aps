@@ -2,6 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check, ArrowLeft, Loader2 } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { analytics } from "../lib/analytics";
 
 const EASE = [0.16, 1, 0.3, 1];
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -15,6 +17,8 @@ export default function Success() {
   const sessionId = params.get("session_id");
   const [state, setState] = useState({ status: "polling", attempts: 0 });
   const timerRef = useRef(null);
+  const purchaseFired = useRef(false);
+  const { clear } = useCart();
 
   useEffect(() => {
     if (!sessionId) {

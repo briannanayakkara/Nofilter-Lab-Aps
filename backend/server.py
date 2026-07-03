@@ -96,10 +96,51 @@ class WaitlistCreate(BaseModel):
     source: Optional[str] = "footer"
 
 
+class ShippingAddress(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    line1: str
+    line2: Optional[str] = None
+    city: str
+    postal_code: str
+    country: str = "DK"
+
+
 class CheckoutCreate(BaseModel):
     product_id: str
     origin_url: str
     quantity: int = 1
+    shipping: Optional[ShippingAddress] = None
+    shipping_option: str = "standard"  # "standard" (39 DKK, free over 400)
+
+
+# Backend-defined shipping options — never trust client
+SHIPPING_OPTIONS: Dict[str, Dict] = {
+    "standard": {
+        "id": "standard",
+        "label": "Standard shipping",
+        "eta": "2–4 business days",
+        "amount": 39.00,
+        "free_over": 400.00,
+    },
+}
+
+
+def _compute_totals(product_id: str, quantity: int, shipping_option: str) -> Dict:
+    product = PRODUCTS[product_id]
+    subtotal = round(float(product["amount"]) * int(quantity), 2)
+    ship = SHIPPING_OPTIONS[shipping_option]
+    shipping_cost = 0.0 if subtotal >= ship["free_over"] else float(ship["amount"])
+    total = round(subtotal + shipping_cost, 2)
+    return {
+        "subtotal": subtotal,
+        "shipping": shipping_cost,
+        "total": total,
+        "currency": product["currency"],
+        "product_amount": float(product["amount"]),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -222,25 +263,69 @@ async def get_product(product_id: str):
     return product
 
 
+@api_router.get("/shipping/options")
+async def list_shipping_options():
+    return {"options": list(SHIPPING_OPTIONS.values())}
+
+
+@api_router.post("/checkout/quote")
+async def checkout_quote(payload: CheckoutCreate):
+    """Server-side price calculation — the client never sets totals."""
+    if payload.product_id not in PRODUCTS:
+        raise HTTPException(status_code=400, detail="Invalid product")
+    if payload.shipping_option not in SHIPPING_OPTIONS:
+        raise HTTPException(status_code=400, detail="Invalid shipping option")
+    if not 1 <= payload.quantity <= 5:
+        raise HTTPException(status_code=400, detail="Quantity must be 1–5")
+    totals = _compute_totals(payload.product_id, payload.quantity, payload.shipping_option)
+    return {
+        "product": PRODUCTS[payload.product_id],
+        "shipping_option": SHIPPING_OPTIONS[payload.shipping_option],
+        "quantity": payload.quantity,
+        **totals,
+    }
+
+
 @api_router.post("/checkout/session")
 async def create_checkout_session(payload: CheckoutCreate, request: Request):
     product = PRODUCTS.get(payload.product_id)
     if not product:
         raise HTTPException(status_code=400, detail="Invalid product")
+    if payload.shipping_option not in SHIPPING_OPTIONS:
+        raise HTTPException(status_code=400, detail="Invalid shipping option")
+    if not 1 <= payload.quantity <= 5:
+        raise HTTPException(status_code=400, detail="Quantity must be 1–5")
+
+    totals = _compute_totals(payload.product_id, payload.quantity, payload.shipping_option)
 
     origin = payload.origin_url.rstrip("/")
     success_url = f"{origin}/success?session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{origin}/?checkout=cancelled"
+    cancel_url = f"{origin}/checkout?cancelled=1"
 
     metadata = {
         "product_id": product["id"],
         "product_name": product["name"],
-        "source": "landing",
+        "quantity": str(payload.quantity),
+        "shipping_option": payload.shipping_option,
+        "source": "checkout-wizard",
     }
+    # Attach shipping data as metadata (Stripe limits values to 500 chars)
+    if payload.shipping:
+        s = payload.shipping
+        metadata.update({
+            "customer_email": s.email,
+            "customer_name": f"{s.first_name} {s.last_name}"[:500],
+            "shipping_phone": (s.phone or "")[:500],
+            "shipping_line1": s.line1[:500],
+            "shipping_line2": (s.line2 or "")[:500],
+            "shipping_city": s.city[:500],
+            "shipping_postal_code": s.postal_code[:500],
+            "shipping_country": s.country[:500],
+        })
 
     stripe = _get_checkout(request)
     checkout_request = CheckoutSessionRequest(
-        amount=float(product["amount"]),
+        amount=float(totals["total"]),
         currency=product["currency"],
         success_url=success_url,
         cancel_url=cancel_url,
@@ -256,9 +341,14 @@ async def create_checkout_session(payload: CheckoutCreate, request: Request):
         "id": str(uuid.uuid4()),
         "session_id": session.session_id,
         "product_id": product["id"],
-        "amount": product["amount"],
+        "quantity": payload.quantity,
+        "shipping_option": payload.shipping_option,
+        "subtotal": totals["subtotal"],
+        "shipping_cost": totals["shipping"],
+        "amount": totals["total"],
         "currency": product["currency"],
         "metadata": metadata,
+        "shipping_address": payload.shipping.model_dump() if payload.shipping else None,
         "payment_status": "initiated",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "updated_at": datetime.now(timezone.utc).isoformat(),

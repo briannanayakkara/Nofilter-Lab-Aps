@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
-const easeOut = [0.16, 1, 0.3, 1];
+const EASE = [0.16, 1, 0.3, 1];
 
 const Nav = () => {
   const [scrolled, setScrolled] = useState(false);
   const [darkTheme, setDarkTheme] = useState(false);
+  const { totalQuantity, openDrawer } = useCart();
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 40);
-      // Switch to light logo once background crosses roughly into ink territory.
-      // Approximation of when the scroll experience transitions from cream to ink.
       const heroHeight = window.innerHeight * 1.2;
       setDarkTheme(y > heroHeight);
     };
@@ -33,7 +34,7 @@ const Nav = () => {
     { label: "The Clear", href: "#the-clear" },
     { label: "Ingredients", href: "#ingredients" },
     { label: "Results", href: "#results" },
-    { label: "How to use", href: "#how-to-use" },
+    { label: "Details", href: "#details" },
     { label: "FAQ", href: "#faq" },
   ];
 
@@ -42,17 +43,12 @@ const Nav = () => {
       data-testid="site-nav"
       initial={{ y: -30, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.9, ease: easeOut, delay: 0.2 }}
+      transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-colors duration-700 ${bgClass}`}
       style={{ color: fg }}
     >
       <div className="max-w-[1400px] mx-auto px-6 md:px-10 lg:px-14 h-16 md:h-20 flex items-center justify-between">
-        <a
-          href="#top"
-          data-testid="nav-logo"
-          className="flex items-center gap-2 select-none"
-          aria-label="Nofilter Lab home"
-        >
+        <a href="#top" data-testid="nav-logo" className="flex items-center gap-2 select-none" aria-label="Nofilter Lab home">
           <AnimatePresence mode="wait">
             <motion.img
               key={isInk ? "light" : "dark"}
@@ -80,13 +76,34 @@ const Nav = () => {
           ))}
         </nav>
 
-        <a
-          href="#the-clear"
-          data-testid="nav-cta-shop"
-          className="font-mono text-[11px] uppercase tracking-[0.2em] opacity-80 hover:opacity-100 transition-opacity duration-500"
+        <button
+          type="button"
+          onClick={openDrawer}
+          data-testid="nav-bag"
+          className="relative flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity duration-500"
+          aria-label="Open bag"
         >
-          Shop →
-        </a>
+          <ShoppingBag className="h-4 w-4" strokeWidth={1.4} />
+          <span className="font-mono text-[11px] uppercase tracking-[0.24em]">
+            Bag
+          </span>
+          <AnimatePresence>
+            {totalQuantity > 0 && (
+              <motion.span
+                key="bag-count"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                className="font-mono text-[10px] tabular-nums leading-none tracking-normal"
+                data-testid="nav-bag-count"
+                style={{ color: fg, opacity: 0.9 }}
+              >
+                ({totalQuantity})
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </button>
       </div>
     </motion.header>
   );

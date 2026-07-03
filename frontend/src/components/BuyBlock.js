@@ -1,16 +1,45 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { toast, Toaster } from "sonner";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { ArrowRight, Loader2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { analytics } from "../lib/analytics";
 
 const EASE = [0.16, 1, 0.3, 1];
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const BuyBlock = () => {
+  const { addItem } = useCart();
   const [email, setEmail] = useState("");
   const [waitLoading, setWaitLoading] = useState(false);
-  const [buyLoading, setBuyLoading] = useState(false);
   const [subscribed, setSubscribed] = useState(false);
+  const [qty, setQty] = useState(1);
+  const buyRef = useRef(null);
+  const viewFired = useRef(false);
+
+  // Fire view_item once when the buy block becomes visible
+  useEffect(() => {
+    const el = buyRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting && !viewFired.current) {
+            viewFired.current = true;
+            analytics.viewItem({
+              id: "the-clear-120",
+              name: "THE CLEAR — 120 ml",
+              amount: 349,
+              currency: "DKK",
+            });
+          }
+        });
+      },
+      { threshold: 0.35 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   const handleWaitlist = async (e) => {
     e.preventDefault();
@@ -26,13 +55,10 @@ const BuyBlock = () => {
       if (!resp.ok) throw new Error(data.detail || "Something went wrong");
 
       if (data.status === "subscribed") {
-        toast.success("You're on the list.", {
-          description: "We just sent you a confirmation.",
-        });
+        toast.success("You're on the list.", { description: "We just sent you a confirmation." });
+        analytics.signUp({ email: email.trim(), source: "buy-block" });
       } else {
-        toast("You're already on the list.", {
-          description: "We'll be in touch when THE CLEAR ships.",
-        });
+        toast("You're already on the list.", { description: "We'll be in touch when THE CLEAR ships." });
       }
       setSubscribed(true);
       setEmail("");
@@ -43,47 +69,24 @@ const BuyBlock = () => {
     }
   };
 
-  const handleBuy = async () => {
-    setBuyLoading(true);
-    try {
-      const resp = await fetch(`${API}/api/checkout/session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: "the-clear-120",
-          origin_url: window.location.origin,
-          quantity: 1,
-        }),
-      });
-      const data = await resp.json();
-      if (!resp.ok || !data.url) throw new Error(data.detail || "Checkout failed");
-      window.location.href = data.url;
-    } catch (err) {
-      toast.error("Couldn't start checkout.", { description: err.message });
-      setBuyLoading(false);
-    }
+  const handleAddToBag = () => {
+    addItem({ quantity: qty });
+    analytics.addToCart({
+      product_id: "the-clear-120",
+      quantity: qty,
+      subtotal: qty * 349,
+      currency: "DKK",
+    });
+    toast("Added to bag.", { description: `${qty} × THE CLEAR` });
   };
 
   return (
     <section
       id="buy"
+      ref={buyRef}
       data-testid="section-buy"
       className="relative py-32 md:py-48 px-6 md:px-10 lg:px-16 border-t border-white/10"
     >
-      <Toaster
-        theme="dark"
-        position="bottom-center"
-        toastOptions={{
-          style: {
-            background: "#1F1F1F",
-            color: "#F2EEE8",
-            border: "1px solid rgba(242,238,232,0.12)",
-            borderRadius: "0",
-            fontFamily: "'Manrope', sans-serif",
-          },
-        }}
-      />
-
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-14 lg:gap-16">
         {/* Left: buy */}
         <motion.div
@@ -115,22 +118,44 @@ const BuyBlock = () => {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleBuy}
-            disabled={buyLoading}
-            data-testid="buy-cta"
-            className="mt-14 inline-flex items-center gap-4 border border-[#F2EEE8]/30 hover:border-[#F2EEE8] transition-colors duration-500 px-8 md:px-10 py-5 md:py-6 group disabled:opacity-60"
-          >
-            <span className="font-mono text-[11px] uppercase tracking-[0.3em]">
-              {buyLoading ? "Starting checkout" : "Add to bag"}
-            </span>
-            {buyLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.25} />
-            ) : (
+          <div className="mt-14 flex flex-col md:flex-row md:items-center gap-6 md:gap-8">
+            {/* Quantity */}
+            <div className="inline-flex items-center border border-[#F2EEE8]/25" data-testid="buy-quantity">
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.max(1, q - 1))}
+                data-testid="buy-qty-decrement"
+                className="p-4 hover:bg-white/[0.05] transition-colors"
+                aria-label="Decrease quantity"
+              >
+                <Minus className="h-3 w-3" strokeWidth={1.25} />
+              </button>
+              <span className="w-12 text-center font-mono text-sm tabular-nums" data-testid="buy-qty">
+                {qty}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQty((q) => Math.min(5, q + 1))}
+                data-testid="buy-qty-increment"
+                disabled={qty >= 5}
+                className="p-4 hover:bg-white/[0.05] transition-colors disabled:opacity-30"
+                aria-label="Increase quantity"
+              >
+                <Plus className="h-3 w-3" strokeWidth={1.25} />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleAddToBag}
+              data-testid="buy-cta"
+              className="inline-flex items-center justify-center gap-4 bg-[#F2EEE8] text-[#1F1F1F] px-8 md:px-10 py-5 md:py-6 hover:bg-white transition-colors duration-500 group"
+            >
+              <ShoppingBag className="h-4 w-4" strokeWidth={1.4} />
+              <span className="font-mono text-[11px] uppercase tracking-[0.3em]">Add to bag</span>
               <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-2" strokeWidth={1.25} />
-            )}
-          </button>
+            </button>
+          </div>
         </motion.div>
 
         {/* Right: waitlist */}
@@ -156,7 +181,7 @@ const BuyBlock = () => {
               className="mt-10 font-mono text-xs uppercase tracking-[0.28em] opacity-70"
               data-testid="waitlist-confirmed"
             >
-              You’re on the list.
+              You&apos;re on the list.
             </motion.p>
           ) : (
             <form onSubmit={handleWaitlist} className="mt-10 flex items-end gap-4 border-b border-white/25 pb-3" data-testid="waitlist-form">
@@ -178,15 +203,9 @@ const BuyBlock = () => {
                 className="font-mono text-[11px] uppercase tracking-[0.28em] opacity-80 hover:opacity-100 transition-opacity duration-500 flex items-center gap-2 disabled:opacity-40"
               >
                 {waitLoading ? (
-                  <>
-                    Sending
-                    <Loader2 className="h-3 w-3 animate-spin" strokeWidth={1.25} />
-                  </>
+                  <>Sending<Loader2 className="h-3 w-3 animate-spin" strokeWidth={1.25} /></>
                 ) : (
-                  <>
-                    Sign up
-                    <ArrowRight className="h-3 w-3" strokeWidth={1.25} />
-                  </>
+                  <>Sign up<ArrowRight className="h-3 w-3" strokeWidth={1.25} /></>
                 )}
               </button>
             </form>
