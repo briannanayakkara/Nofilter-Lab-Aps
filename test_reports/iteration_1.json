@@ -1,0 +1,25 @@
+{
+  "summary": "Frontend-only latency-sensitive test pass for Nofilter Lab 'THE CLEAR' landing page. All 9 requested UI/scroll checks passed on desktop (1440x900) and mobile (375x812). Hero, nav, scroll-driven statement, ingredients, results, how-to-use, FAQ accordion, footer, and responsive layout all verified.",
+  "tested_scope": ["frontend"],
+  "passed": [
+    "Hero: data-testid=hero-title renders 'Clear skin. Fewer choices.' and hero-product image visible on cream (#F2EEE8) background",
+    "Nav: site-nav, nav-logo, all 5 nav-link-* items and nav-cta-shop present and visible on load",
+    "Statement scene @scrollY=1500: statement-heading 'Skincare shouldn't be this complicated.' rendered with opacity=1 on visually dark background (ScrollExperience overlay)",
+    "Ingredients scene @scrollY=3000: scene-ingredients visible with both '2% BHA' and 'Hyaluronic Acid' text and pinned bottle on left",
+    "Results scene @scrollY=4800: scene-results visible; metric-1=94%, metric-2=91%, metric-3=88%, all opacity=1 (>0.5)",
+    "How to Use: section-how-to-use visible with how-step-1 (Cleanse), how-step-2 (Apply), how-step-3 (Let it work)",
+    "FAQ: 6 items rendered; initially faq-toggle-0 aria-expanded=true; clicking faq-toggle-2 correctly closes item 0 (aria-expanded=false) and opens item 2 (aria-expanded=true)",
+    "Footer: site-footer visible with footer-cta, footer-logo, footer-email, footer-social-instagram, footer-social-tiktok, footer-privacy, footer-terms; 'Less.' and 'Done well.' both rendered (across two lines)",
+    "Responsive @375x812: hero-title and hero-product visible; document.scrollWidth === clientWidth (no horizontal overflow)"
+  ],
+  "failed": [],
+  "action_items": [],
+  "success_rate": {"backend": "n/a (skipped per request)", "frontend": "100% (9/9)"},
+  "retest_needed": false,
+  "full_testing_deferred": true,
+  "notes": [
+    "One benign framer-motion console warning: 'Please ensure that the container has a non-static position...' — non-blocking, scroll offsets still compute correctly and all scroll-driven scenes render as expected.",
+    "document.body backgroundColor stays rgb(242,238,232) throughout scroll — the cream→ink transition is driven by a ScrollExperience overlay layer (visually correct as confirmed by screenshots at y=1500/3000/4800).",
+    "Footer element's own computed backgroundColor is rgba(0,0,0,0) — the dark surface is applied by a parent wrapper; footer still renders on dark visually as intended."
+  ]
+}
