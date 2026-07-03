@@ -14,18 +14,25 @@ const DEFAULT_ITEM = {
   image: "/assets/the-clear.png",
 };
 
+const readCart = () => {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_e) {
+    return [];
+  }
+};
+
 export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState([]);
+  // Read from localStorage synchronously on first render — no hydration race.
+  const [items, setItems] = useState(readCart);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const hydrated = true; // synchronous init means always "hydrated"
 
-  // Hydrate from localStorage once
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw));
-    } catch (_e) { /* localStorage disabled */ }
-  }, []);
-
+  // Persist to localStorage whenever items change
   useEffect(() => {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
@@ -101,8 +108,9 @@ export const CartProvider = ({ children }) => {
       drawerOpen,
       openDrawer: () => setDrawerOpen(true),
       closeDrawer: () => setDrawerOpen(false),
+      hydrated,
     }),
-    [items, primaryItem, totalQuantity, subtotal, addItem, setQuantity, removeItem, clear, drawerOpen]
+    [items, primaryItem, totalQuantity, subtotal, addItem, setQuantity, removeItem, clear, drawerOpen, hydrated]
   );
 
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

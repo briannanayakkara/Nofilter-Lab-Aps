@@ -47,7 +47,7 @@ const StepBadge = ({ n, label, active, done }) => (
 
 export default function Checkout() {
   const navigate = useNavigate();
-  const { items, primaryItem, subtotal, totalQuantity, clear } = useCart();
+  const { items, primaryItem, subtotal, totalQuantity, hydrated } = useCart();
 
   const [step, setStep] = useState(1); // 1: shipping, 2: review, 3: payment (redirect)
   const [shipping, setShipping] = useState(emptyShipping);
@@ -56,12 +56,12 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
 
-  // Bounce to home if the cart is empty
+  // Bounce to home only AFTER cart has hydrated from localStorage
   useEffect(() => {
-    if (items.length === 0 && !redirecting) {
+    if (hydrated && items.length === 0 && !redirecting) {
       navigate("/", { replace: true });
     }
-  }, [items.length, navigate, redirecting]);
+  }, [hydrated, items.length, navigate, redirecting]);
 
   // Fetch server-side quote whenever quantity changes
   useEffect(() => {
