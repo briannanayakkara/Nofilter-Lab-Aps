@@ -1,0 +1,115 @@
+{
+  "theme_and_archetype": {
+    "domain": "Premium Skincare",
+    "theme": "Dynamic (Light to Dark transition)",
+    "archetype": "5 (Luxury) combined with 1 (Organic & Earthy)"
+  },
+  "typography": {
+    "primary": {
+      "family": "'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif",
+      "usage": "Headings, primary statements, storytelling",
+      "weights": ["300", "400", "500"]
+    },
+    "secondary": {
+      "family": "'Courier Prime', monospace",
+      "usage": "Product info, micro-copy, ingredient lists, technical specs",
+      "weights": ["400"]
+    },
+    "scale": {
+      "h1": "text-5xl sm:text-6xl md:text-7xl lg:text-[8vw] tracking-tighter leading-[0.9]",
+      "h2": "text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-none",
+      "h3": "text-2xl sm:text-3xl lg:text-4xl tracking-tight",
+      "body": "text-base md:text-lg lg:text-xl leading-relaxed text-opacity-80",
+      "micro": "text-xs md:text-sm uppercase tracking-[0.15em]"
+    }
+  },
+  "color_system": {
+    "background": {
+      "light": "#F2EEE8",
+      "dark": "#1F1F1F"
+    },
+    "text": {
+      "light_on_dark": "#F2EEE8",
+      "dark_on_light": "#1F1F1F"
+    },
+    "accent": "#9AA6B2"
+  },
+  "layout_and_spacing": {
+    "philosophy": "Generous whitespace. Big, quiet moments. Optical alignment over geometric.",
+    "container": "max-w-[1400px] mx-auto px-6 md:px-12 lg:px-24",
+    "section_padding": "py-24 md:py-32 lg:py-48",
+    "grid": "grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12"
+  },
+  "motion_and_interactions": {
+    "philosophy": "Slow, deliberate motion with elegant easing. Nothing bouncy or fast.",
+    "easing": "[0.16, 1, 0.3, 1]",
+    "scroll_sequence": [
+      {
+        "scene": 1,
+        "name": "Hero Statement",
+        "background": "#F2EEE8",
+        "text_color": "#1F1F1F",
+        "layout": "Product image is massive and centered. Tagline 'Clear skin. Fewer choices.' fades in around it.",
+        "animation": "Scale up product slightly on initial load. On scroll down, product begins to scale down."
+      },
+      {
+        "scene": 2,
+        "name": "The Transition",
+        "background": "Transitions from #F2EEE8 to #1F1F1F",
+        "text_color": "#F2EEE8",
+        "layout": "Product scales down, rotates perfectly vertical. Background darkens. The statement 'Skincare shouldn't be this complicated...' reveals.",
+        "animation": "Background color lerp based on scroll. Text opacity and y-axis translation (fade up) for copy."
+      },
+      {
+        "scene": 3,
+        "name": "The Ingredients (Sticky)",
+        "background": "#1F1F1F",
+        "text_color": "#F2EEE8",
+        "layout": "Product pins to the left side (or top on mobile). Ingredients text ('2% BHA', 'Hyaluronic Acid') scrolls up on the right side.",
+        "animation": "Product remains `position: sticky`. Right-side content uses vertical scroll."
+      },
+      {
+        "scene": 4,
+        "name": "The Trust & Results",
+        "background": "#1F1F1F",
+        "text_color": "#F2EEE8",
+        "layout": "Product subtly translates to the right. Stats ('94% fewer breakouts') reveal on the left.",
+        "animation": "Product x-axis translation based on scroll. Staggered fade-in for the 3 key stats. Subtle blur effect on the product to shift focus to data."
+      },
+      {
+        "scene": 5,
+        "name": "How to Use & Outro",
+        "background": "#1F1F1F",
+        "text_color": "#F2EEE8",
+        "layout": "Product fades out or drops out of frame. 3-step usage appears followed by FAQ and Footer.",
+        "animation": "Product unpins. Sections flow naturally with subtle scroll-reveal on text."
+      }
+    ]
+  },
+  "components": {
+    "typography": "Use raw Tailwind classes for layout-heavy sections. Break away from standard card components.",
+    "faq_accordion": "Use custom or headless accordion (Shadcn customized): no borders, large typography, simple plus/minus icons, accent color #9AA6B2 for hover states."
+  },
+  "media": {
+    "product_image": {
+      "url": "/assets/the-clear.png",
+      "description": "Matte black cylindrical bottle. Used throughout the entire scroll sequence.",
+      "category": "hero, scroll_sequence"
+    },
+    "logos": {
+      "white": "/assets/logo-white.svg",
+      "black": "/assets/logo-black.svg",
+      "description": "Brand logo."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Build this as a single-page React app with Tailwind CSS and Framer Motion.",
+    "Use JS/JSX (no TypeScript).",
+    "Do NOT use placeholder images. Only use the provided assets in /assets/.",
+    "Implement the Apple-style scroll-driven product reveal using Framer Motion's `useScroll` and `useTransform` hooks.",
+    "Ensure `data-testid` is added to all interactive and key informational elements, such as buttons, accordions, ingredient items, and metric numbers.",
+    "Use Manrope for primary text, Courier Prime for data/ingredients.",
+    "Make the background color transition from #F2EEE8 to #1F1F1F seamless and tied to the scroll position of the global wrapper.",
+    "No generic borders or box-shadows. Keep it completely minimalist and premium."
+  ]
+}
