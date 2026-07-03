@@ -18,6 +18,10 @@ from emergentintegrations.payments.stripe.checkout import (
     CheckoutSessionRequest,
 )
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -50,7 +54,20 @@ PRODUCTS: Dict[str, Dict] = {
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
+def _client_ip(request: Request) -> str:
+    """Prefer X-Forwarded-For (Kubernetes ingress rewrites the source IP)."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=_client_ip, default_limits=[])
+
 app = FastAPI(title="Nofilter Lab API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(
@@ -154,7 +171,8 @@ async def _send_welcome_email(recipient: str) -> Optional[str]:
 
 
 @api_router.post("/waitlist")
-async def waitlist_signup(payload: WaitlistCreate):
+@limiter.limit("5/hour")
+async def waitlist_signup(request: Request, payload: WaitlistCreate):
     email = payload.email.lower().strip()
 
     existing = await db.waitlist.find_one({"email": email}, {"_id": 0})
