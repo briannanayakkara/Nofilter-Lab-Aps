@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import json
 import logging
 import httpx
 from pathlib import Path
@@ -11,12 +12,7 @@ from typing import Optional, Dict
 import uuid
 from datetime import datetime, timezone
 
-from emergentintegrations.payments.stripe.checkout import (
-    StripeCheckout,
-    CheckoutSessionResponse,
-    CheckoutStatusResponse,
-    CheckoutSessionRequest,
-)
+import stripe
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -33,12 +29,15 @@ mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ["DB_NAME"]]
 
-# Managed Resend / email proxy (constant per playbook)
-EMAIL_BASE_URL = "https://integrations.emergentagent.com"
-EMAIL_KEY = os.environ["EMERGENT_EMAIL_KEY"]
+# Resend (direct — sandbox sender works without domain verification for testing)
+EMAIL_BASE_URL = "https://api.resend.com"
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 EMAIL_FROM_NAME = os.environ["EMAIL_FROM_NAME"]
+EMAIL_FROM_ADDRESS = os.environ.get("EMAIL_FROM_ADDRESS", "onboarding@resend.dev")
 
 STRIPE_API_KEY = os.environ["STRIPE_API_KEY"]
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+stripe.api_key = STRIPE_API_KEY
 
 # Fixed, backend-defined product catalog — never trust frontend prices
 PRODUCTS: Dict[str, Dict] = {
@@ -188,17 +187,21 @@ def _welcome_email_html() -> str:
 
 
 async def _send_welcome_email(recipient: str) -> Optional[str]:
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY not set — skipping welcome email send")
+        return None
+
     payload = {
+        "from": f"{EMAIL_FROM_NAME} <{EMAIL_FROM_ADDRESS}>",
         "to": [recipient],
         "subject": "You're on the list — Nofilter Lab",
         "html": _welcome_email_html(),
-        "from_name": EMAIL_FROM_NAME,
     }
     try:
         async with httpx.AsyncClient(timeout=30) as http:
             resp = await http.post(
-                f"{EMAIL_BASE_URL}/api/v1/email/send",
-                headers={"X-Email-Key": EMAIL_KEY},
+                f"{EMAIL_BASE_URL}/emails",
+                headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
                 json=payload,
             )
         resp.raise_for_status()
@@ -249,12 +252,6 @@ async def waitlist_count():
 # ---------------------------------------------------------------------------
 # Stripe checkout
 # ---------------------------------------------------------------------------
-def _get_checkout(request: Request) -> StripeCheckout:
-    host_url = str(request.base_url).rstrip("/")
-    webhook_url = f"{host_url}/api/webhook/stripe"
-    return StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-
-
 @api_router.get("/products/{product_id}")
 async def get_product(product_id: str):
     product = PRODUCTS.get(product_id)
@@ -323,23 +320,32 @@ async def create_checkout_session(payload: CheckoutCreate, request: Request):
             "shipping_country": s.country[:500],
         })
 
-    stripe = _get_checkout(request)
-    checkout_request = CheckoutSessionRequest(
-        amount=float(totals["total"]),
-        currency=product["currency"],
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata=metadata,
-    )
     try:
-        session: CheckoutSessionResponse = await stripe.create_checkout_session(checkout_request)
+        # Single flat line item for the whole order (product + shipping combined) —
+        # matches the previous single-amount hosted-checkout behavior, not itemized.
+        session = await stripe.checkout.Session.create_async(
+            mode="payment",
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": product["currency"],
+                        "product_data": {"name": f'{product["name"]} × {payload.quantity}'},
+                        "unit_amount": round(totals["total"] * 100),
+                    },
+                    "quantity": 1,
+                }
+            ],
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata=metadata,
+        )
     except Exception as e:
         logger.error(f"Stripe create session failed: {e}")
         raise HTTPException(status_code=502, detail="Could not start checkout")
 
     tx_doc = {
         "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
+        "session_id": session.id,
         "product_id": product["id"],
         "quantity": payload.quantity,
         "shipping_option": payload.shipping_option,
@@ -355,7 +361,7 @@ async def create_checkout_session(payload: CheckoutCreate, request: Request):
     }
     await db.payment_transactions.insert_one(tx_doc)
 
-    return {"url": session.url, "session_id": session.session_id}
+    return {"url": session.url, "session_id": session.id}
 
 
 @api_router.get("/checkout/status/{session_id}")
@@ -374,9 +380,8 @@ async def checkout_status(session_id: str, request: Request):
             "metadata": tx.get("metadata", {}),
         }
 
-    stripe = _get_checkout(request)
     try:
-        status: CheckoutStatusResponse = await stripe.get_checkout_status(session_id)
+        status = await stripe.checkout.Session.retrieve_async(session_id)
     except Exception as e:
         logger.error(f"Stripe get_checkout_status failed: {e}")
         raise HTTPException(status_code=502, detail="Could not check status")
@@ -396,7 +401,7 @@ async def checkout_status(session_id: str, request: Request):
     return {
         "status": status.status,
         "payment_status": status.payment_status,
-        "amount_total": status.amount_total,
+        "amount_total": (status.amount_total or 0) / 100,
         "currency": status.currency,
         "metadata": status.metadata,
     }
@@ -406,21 +411,30 @@ async def checkout_status(session_id: str, request: Request):
 async def stripe_webhook(request: Request):
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
-    stripe = _get_checkout(request)
-    try:
-        event = await stripe.handle_webhook(body, signature)
-    except Exception as e:
-        logger.error(f"Webhook error: {e}")
-        raise HTTPException(status_code=400, detail="Webhook error")
 
-    if event.session_id:
+    if STRIPE_WEBHOOK_SECRET:
+        try:
+            event = stripe.Webhook.construct_event(body, signature, STRIPE_WEBHOOK_SECRET)
+        except (stripe.error.SignatureVerificationError, ValueError) as e:
+            logger.error(f"Webhook signature verification failed: {e}")
+            raise HTTPException(status_code=400, detail="Webhook error")
+    else:
+        logger.warning("STRIPE_WEBHOOK_SECRET not set — accepting webhook without signature verification")
+        try:
+            event = stripe.Event.construct_from(json.loads(body), stripe.api_key)
+        except Exception as e:
+            logger.error(f"Webhook parse error: {e}")
+            raise HTTPException(status_code=400, detail="Webhook error")
+
+    session_obj = event.data.object
+    if event.type.startswith("checkout.session.") and session_obj.get("id"):
         await db.payment_transactions.update_one(
-            {"session_id": event.session_id},
+            {"session_id": session_obj["id"]},
             {
                 "$set": {
-                    "payment_status": event.payment_status or "unknown",
-                    "webhook_event_id": event.event_id,
-                    "webhook_event_type": event.event_type,
+                    "payment_status": session_obj.get("payment_status") or "unknown",
+                    "webhook_event_id": event.id,
+                    "webhook_event_type": event.type,
                     "updated_at": datetime.now(timezone.utc).isoformat(),
                 }
             },

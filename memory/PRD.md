@@ -5,7 +5,7 @@ Build the website for **Nofilter Lab**, a premium skincare brand. Product = "THE
 
 ## Architecture
 - **Frontend**: React 19 + Tailwind + Framer Motion + react-router-dom + sonner + PostHog (in index.html).
-- **Backend**: FastAPI + Motor (Mongo) + httpx + slowapi (rate limiter) + `emergentintegrations` (Stripe hosted checkout).
+- **Backend**: FastAPI + Motor (Mongo) + httpx + slowapi (rate limiter) + `stripe` SDK (Stripe hosted checkout) + Resend (transactional email, direct API).
 - **Data**: Mongo collections: `waitlist`, `payment_transactions`, `status_checks`.
 
 ## Backend Endpoints

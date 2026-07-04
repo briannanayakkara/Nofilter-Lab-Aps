@@ -70,7 +70,7 @@ class TestWaitlist:
         data = r.json()
         assert data["status"] == "subscribed"
         assert "message" in data and isinstance(data["message"], str)
-        # Real welcome email should be triggered via Emergent email proxy
+        # Real welcome email should be triggered via Resend (requires RESEND_API_KEY)
         assert data.get("email_sent") is True, f"email_sent flag was not True: {data}"
 
     def test_duplicate_email_returns_already_subscribed(self, api):
