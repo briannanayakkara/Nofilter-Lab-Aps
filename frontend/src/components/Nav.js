@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
+import { analytics } from "../lib/analytics";
 
 const EASE = [0.16, 1, 0.3, 1];
 
 const Nav = () => {
   const [scrolled, setScrolled] = useState(false);
   const [darkTheme, setDarkTheme] = useState(false);
-  const { totalQuantity, openDrawer } = useCart();
+  const { totalQuantity, openDrawer, addItem } = useCart();
 
   useEffect(() => {
     const onScroll = () => {
@@ -38,6 +40,17 @@ const Nav = () => {
     { label: "FAQ", href: "#faq" },
   ];
 
+  const handleQuickAdd = () => {
+    addItem({ quantity: 1 });
+    analytics.addToCart({
+      product_id: "the-clear-120",
+      quantity: 1,
+      subtotal: 349,
+      currency: "DKK",
+    });
+    toast("Added to bag.", { description: "1 × THE CLEAR" });
+  };
+
   return (
     <motion.header
       data-testid="site-nav"
@@ -63,47 +76,104 @@ const Nav = () => {
           </AnimatePresence>
         </a>
 
-        <nav className="hidden md:flex items-center gap-10">
-          {navItems.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-              className="text-[13px] tracking-wide opacity-70 hover:opacity-100 transition-opacity duration-500"
+        <AnimatePresence mode="wait">
+          {darkTheme ? (
+            <motion.div
+              key="purchase-bar"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.5, ease: EASE }}
+              className="hidden md:flex items-center gap-6"
+              data-testid="nav-purchase-bar"
             >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-
-        <button
-          type="button"
-          onClick={openDrawer}
-          data-testid="nav-bag"
-          className="relative flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity duration-500"
-          aria-label="Open bag"
-        >
-          <ShoppingBag className="h-4 w-4" strokeWidth={1.4} />
-          <span className="font-mono text-[11px] uppercase tracking-[0.24em]">
-            Bag
-          </span>
-          <AnimatePresence>
-            {totalQuantity > 0 && (
-              <motion.span
-                key="bag-count"
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.6, opacity: 0 }}
-                transition={{ duration: 0.35, ease: EASE }}
-                className="font-mono text-[10px] tabular-nums leading-none tracking-normal"
-                data-testid="nav-bag-count"
-                style={{ color: fg, opacity: 0.9 }}
+              <span className="font-mono text-[11px] uppercase tracking-[0.24em] opacity-70">
+                THE CLEAR — 349 DKK
+              </span>
+              <button
+                type="button"
+                onClick={handleQuickAdd}
+                data-testid="nav-buy-cta"
+                className="inline-flex items-center gap-2 bg-[#F2EEE8] text-[#1F1F1F] px-5 py-2.5 hover:bg-white transition-colors duration-500"
+                aria-label="Add THE CLEAR to bag"
               >
-                ({totalQuantity})
-              </motion.span>
+                <ShoppingBag className="h-3.5 w-3.5" strokeWidth={1.4} />
+                <span className="font-mono text-[11px] uppercase tracking-[0.24em]">Add to bag</span>
+              </button>
+            </motion.div>
+          ) : (
+            <motion.nav
+              key="nav-links"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.5, ease: EASE }}
+              className="hidden md:flex items-center gap-10"
+            >
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                  className="text-[13px] tracking-wide opacity-70 hover:opacity-100 transition-opacity duration-500"
+                >
+                  {item.label}
+                </a>
+              ))}
+            </motion.nav>
+          )}
+        </AnimatePresence>
+
+        <div className="flex items-center gap-4">
+          <AnimatePresence>
+            {darkTheme && (
+              <motion.button
+                key="mobile-buy"
+                type="button"
+                onClick={handleQuickAdd}
+                data-testid="nav-buy-cta-mobile"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="md:hidden inline-flex items-center gap-1.5 bg-[#F2EEE8] text-[#1F1F1F] px-3.5 py-2 hover:bg-white transition-colors duration-500"
+                aria-label="Add THE CLEAR to bag"
+              >
+                <ShoppingBag className="h-3.5 w-3.5" strokeWidth={1.4} />
+                <span className="font-mono text-[10px] uppercase tracking-[0.2em]">Buy</span>
+              </motion.button>
             )}
           </AnimatePresence>
-        </button>
+
+          <button
+            type="button"
+            onClick={openDrawer}
+            data-testid="nav-bag"
+            className="relative flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity duration-500"
+            aria-label="Open bag"
+          >
+            <ShoppingBag className="h-4 w-4" strokeWidth={1.4} />
+            <span className="font-mono text-[11px] uppercase tracking-[0.24em]">
+              Bag
+            </span>
+            <AnimatePresence>
+              {totalQuantity > 0 && (
+                <motion.span
+                  key="bag-count"
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                  className="font-mono text-[10px] tabular-nums leading-none tracking-normal"
+                  data-testid="nav-bag-count"
+                  style={{ color: fg, opacity: 0.9 }}
+                >
+                  ({totalQuantity})
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </button>
+        </div>
       </div>
     </motion.header>
   );
