@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Minus, Plus, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { X, Minus, Plus, ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { analytics } from "../lib/analytics";
+import { buildCheckoutUrl, isShopifyConfigured } from "../lib/shopify";
 
 const EASE = [0.16, 1, 0.3, 1];
 
@@ -17,19 +18,34 @@ const CartDrawer = () => {
     closeDrawer,
     totalQuantity,
   } = useCart();
-  const navigate = useNavigate();
+  const [checkingOut, setCheckingOut] = useState(false);
 
-  const goCheckout = () => {
+  const goCheckout = async () => {
     const first = items[0];
     if (!first) return;
+
+    if (!isShopifyConfigured()) {
+      toast.error("Shopify isn't connected yet.", {
+        description: "See guide.html to connect your store.",
+      });
+      return;
+    }
+
     analytics.beginCheckout({
       product_id: first.product_id,
       quantity: totalQuantity,
       total: subtotal,
       currency: first.currency,
     });
-    closeDrawer();
-    navigate("/checkout");
+
+    setCheckingOut(true);
+    try {
+      const url = await buildCheckoutUrl({ quantity: totalQuantity });
+      window.location.href = url;
+    } catch (e) {
+      toast.error("Couldn't start checkout.", { description: e.message });
+      setCheckingOut(false);
+    }
   };
 
   return (
@@ -174,11 +190,21 @@ const CartDrawer = () => {
                 <button
                   type="button"
                   onClick={goCheckout}
+                  disabled={checkingOut}
                   data-testid="cart-checkout-cta"
-                  className="w-full inline-flex items-center justify-center gap-4 bg-[#1F1F1F] text-[#F2EEE8] px-8 py-5 hover:bg-black transition-colors duration-500 group"
+                  className="w-full inline-flex items-center justify-center gap-4 bg-[#1F1F1F] text-[#F2EEE8] px-8 py-5 hover:bg-black transition-colors duration-500 group disabled:opacity-60"
                 >
-                  <span className="font-mono text-[11px] uppercase tracking-[0.3em]">Check out</span>
-                  <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-2" strokeWidth={1.25} />
+                  {checkingOut ? (
+                    <>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.3em]">Redirecting…</span>
+                      <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.25} />
+                    </>
+                  ) : (
+                    <>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.3em]">Check out</span>
+                      <ArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-2" strokeWidth={1.25} />
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
