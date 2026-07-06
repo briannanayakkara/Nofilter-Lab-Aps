@@ -22,7 +22,7 @@ const storefrontFetch = async (query, variables) => {
       },
       body: JSON.stringify({ query, variables }),
     });
-  } catch (e) {
+  } catch {
     throw new Error("Couldn't reach your Shopify store. Check your store domain in shopify-config.js.");
   }
   if (!res.ok) {
@@ -69,7 +69,7 @@ const CART_CREATE_MUTATION = `
 // handles payment, shipping, and taxes from there.
 export const buildCheckoutUrl = async ({ quantity }) => {
   if (!isShopifyConfigured()) {
-    throw new Error("Shopify isn't connected yet — see guide.html");
+    throw new Error("Shopify isn't connected yet — see docs/index.html");
   }
 
   const productData = await storefrontFetch(PRODUCT_VARIANT_QUERY, {

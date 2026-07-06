@@ -1,6 +1,6 @@
 // ============================================================
 // SHOPIFY SETUP — paste your 3 values below, then save this file.
-// Don't know where to find them? Open guide.html in your browser.
+// Don't know where to find them? Open docs/index.html in your browser.
 // ============================================================
 const shopifyConfig = {
   // Your store's domain, exactly as Shopify shows it.
