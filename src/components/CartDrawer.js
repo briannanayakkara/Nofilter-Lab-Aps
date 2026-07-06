@@ -26,7 +26,7 @@ const CartDrawer = () => {
 
     if (!isShopifyConfigured()) {
       toast.error("Shopify isn't connected yet.", {
-        description: "See guide.html to connect your store.",
+        description: "See docs/index.html to connect your store.",
       });
       return;
     }

@@ -19,7 +19,7 @@ There is no `/api` backend anymore — the former FastAPI/Mongo/Stripe/Resend en
 
 ## Cart / Buying flow
 1. **Add to Bag** on landing (or the sticky nav CTA) → slide-in cart drawer (right, glass scrim) with quantity controls (1–5). Cart is local UI state only.
-2. Cart drawer **Check out** button → `buildCheckoutUrl({ quantity })` → `window.location` redirect to Shopify's hosted checkout. If `shopify-config.js` is empty, a toast ("Shopify isn't connected yet — see guide.html") shows instead; no crash.
+2. Cart drawer **Check out** button → `buildCheckoutUrl({ quantity })` → `window.location` redirect to Shopify's hosted checkout. If `shopify-config.js` is empty, a toast ("Shopify isn't connected yet — see docs/index.html") shows instead; no crash.
 3. Payment, shipping address, and tax are collected on Shopify's checkout. After paying, the customer sees Shopify's own order-status page — there is no custom `/success` page and no `purchase` analytics event (a known, inherent limit of this integration style without Shopify Plus).
 
 ## Cart persistence
@@ -61,7 +61,7 @@ Converted the project into a forkable, backend-free Shopify-connected template. 
 - **Backend removed entirely**: deleted `backend/` (FastAPI + Motor/Mongo + Stripe + Resend), the Docker Mongo dependency, and the stale Emergent-era `tests/`, `test_result.md`, and `test_reports/`.
 - **Shopify Buy SDK integration**: added `shopify-config.js` (the one file a forker edits — 3 values) and `src/lib/shopify.js` (`isShopifyConfigured()` + `buildCheckoutUrl()`), wired into `CartDrawer.js`'s Check out button (redirects to Shopify's hosted checkout, or toasts if unconfigured). `craco.config.js` widens CRA's `ModuleScopePlugin` so the root `shopify-config.js` can be imported from `src/`.
 - **Removed the old checkout stack**: deleted `/checkout` and `/success` routes + `src/pages/Checkout.js`/`Success.js`, and removed the backend-dependent waitlist signup from `BuyBlock.js` (its buy column now spans full width).
-- **Docs for forkers**: new `guide.html` (plain-language 6-step setup: fork → free Shopify store → Storefront API → paste 3 values → preview → publish via Netlify/Vercel drag-and-drop) and a rewritten `README.md` pointing to it.
+- **Docs for forkers**: the setup guide `docs/index.html` (plain-language 6-step setup: fork → free Shopify store → Storefront API → paste 3 values → preview → publish via Netlify/Vercel drag-and-drop) and a rewritten `README.md` pointing to it. Served at the repo's GitHub Pages URL (Pages source: `main` → `/docs`).
 - **`.claude/` config** updated to describe the backend-free architecture (removed `mongo-patterns`/`api-docs` skills and `seed-data` command; rewrote agents, remaining commands, code-style, testing-patterns, hooks).
 - ⚠️ **Not yet manually verified in a browser** (no browser automation available here). `npm install`, `npm run build`, and `npm run dev` (HTTP 200 on :3000) were all confirmed; the click-through (Add to bag → drawer → Check out toast with empty config) and a real Shopify checkout redirect against a live dev store still need a manual pass.
 
@@ -70,7 +70,7 @@ The app is a single static frontend — no backend, no database, no Docker. From
 
 - `npm install` — installs dependencies (generates/uses `package-lock.json`; `.npmrc` sets `legacy-peer-deps=true`).
 - `npm run dev` (alias of `npm run start`, i.e. `craco start`) — served at http://localhost:3000.
-- `npm run build` — production build into `build/` (deploy that folder to any static host; `guide.html` documents the Netlify/Vercel drag-and-drop flow for forkers).
+- `npm run build` — production build into `build/` (deploy that folder to any static host; `docs/index.html` documents the Netlify/Vercel drag-and-drop flow for forkers).
 - **Shopify config**: `shopify-config.js` at the repo root holds the 3 values (store domain, Storefront access token, product handle). It's committed with real values once configured — Shopify Storefront tokens are public/client-safe by design, so it is intentionally **not** gitignored. With it left empty, the site runs fine but Check out shows a "not connected" toast instead of redirecting.
 - **No automated test framework** (no backend to test, and `@testing-library/react` is not installed) — changes are verified via `npm run build`/`npm run dev` compiling cleanly, ESLint (see Known Issues re: config gap), and manual browser QA.
 
@@ -97,7 +97,7 @@ Several former backlog items are now obsolete because the backend they depended 
 - `src/context/CartContext.js` — local cart UI state (localStorage, no backend).
 - `src/components/{Nav,CartDrawer,ScrollExperience,SplitReveal,DetailsScene,HowToUse,BuyBlock,Faq,Footer}.js`
 - `src/lib/analytics.js`
-- `guide.html`, `README.md` — non-technical setup walkthrough + quick reference.
+- `docs/index.html`, `README.md` — non-technical setup walkthrough (also served via GitHub Pages) + quick reference.
 - `craco.config.js`, `tailwind.config.js`, `postcss.config.js`, `jsconfig.json`, `components.json` — build/tooling config (at the repo root).
 - `.claude/` — project config for Claude Code (agents, commands, hooks, skills); see `.claude/skills/*/SKILL.md` for repo-specific conventions (code style, testing notes, planning template).
 - `docs/superpowers/specs/`, `docs/superpowers/plans/` — design specs and implementation plans written via the brainstorming/writing-plans workflow.

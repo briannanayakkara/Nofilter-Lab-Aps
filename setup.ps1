@@ -31,7 +31,7 @@ function Read-Required($prompt) {
 
 Write-Title 'Connect your site to Shopify'
 Write-Host "You'll paste 3 values from your Shopify admin. Not sure where to find"
-Write-Host "them? Open guide.html in your browser first - it shows every click."
+Write-Host "them? Open docs/index.html in your browser first - it shows every click."
 
 # --- 1. Store domain ---------------------------------------------------------
 Write-Title '1 of 3  -  Store domain'
