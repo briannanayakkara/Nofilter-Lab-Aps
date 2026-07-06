@@ -98,6 +98,19 @@ let webpackConfig = {
       if (config.enableHealthCheck && healthPluginInstance) {
         webpackConfig.plugins.push(healthPluginInstance);
       }
+
+      // Allow importing shopify-config.js from the repo root (outside src/) —
+      // CRA's ModuleScopePlugin blocks cross-boundary imports by default.
+      const ModuleScopePlugin = require("react-dev-utils/ModuleScopePlugin");
+      const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
+        (plugin) => plugin instanceof ModuleScopePlugin
+      );
+      if (scopePluginIndex > -1) {
+        webpackConfig.resolve.plugins[scopePluginIndex].appSrcs.push(
+          path.resolve(__dirname)
+        );
+      }
+
       return webpackConfig;
     },
   },
