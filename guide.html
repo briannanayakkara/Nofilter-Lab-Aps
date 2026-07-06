@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Set up your store — Nofilter Lab template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bone: #F2EEE8;
+    --ink: #1F1F1F;
+    --accent: #9AA6B2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bone);
+    color: var(--ink);
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 64px 24px 120px; }
+  header.page-header { margin-bottom: 64px; }
+  .eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin: 0 0 20px;
+  }
+  h1 {
+    font-weight: 300;
+    font-size: clamp(32px, 6vw, 52px);
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0 0 20px;
+  }
+  .lede { font-size: 18px; opacity: 0.8; max-width: 52ch; margin: 0; }
+  .step {
+    border-top: 1px solid rgba(31,31,31,0.15);
+    padding: 48px 0;
+  }
+  .step:last-of-type { border-bottom: 1px solid rgba(31,31,31,0.15); }
+  .step-number {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    opacity: 0.55;
+    margin: 0 0 12px;
+  }
+  .step h2 {
+    font-weight: 400;
+    font-size: clamp(22px, 4vw, 30px);
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+  }
+  .step p { font-size: 16px; margin: 0 0 16px; }
+  .step ol, .step ul { padding-left: 22px; margin: 0 0 16px; }
+  .step li { margin-bottom: 10px; font-size: 16px; }
+  code, pre {
+    font-family: 'Courier Prime', monospace;
+    background: rgba(31,31,31,0.06);
+  }
+  code { padding: 2px 6px; font-size: 0.9em; }
+  pre {
+    padding: 16px 20px;
+    overflow-x: auto;
+    font-size: 14px;
+    margin: 0 0 16px;
+  }
+  .checkpoint {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: rgba(31,31,31,0.05);
+    padding: 16px 20px;
+    margin-top: 20px;
+  }
+  .checkpoint .mark {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    white-space: nowrap;
+    padding-top: 2px;
+  }
+  .checkpoint p { margin: 0; font-size: 15px; }
+  .screenshot {
+    border: 1px dashed rgba(31,31,31,0.3);
+    padding: 40px 20px;
+    text-align: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    opacity: 0.6;
+    margin: 20px 0;
+  }
+  .note {
+    font-size: 14px;
+    opacity: 0.65;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+    margin: 16px 0;
+  }
+  a { color: var(--ink); }
+  footer.page-footer {
+    margin-top: 64px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(31,31,31,0.15);
+    font-size: 13px;
+    opacity: 0.55;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="page-header">
+    <p class="eyebrow">Nofilter Lab · Store setup guide</p>
+    <h1>Get your own store running in about 15 minutes.</h1>
+    <p class="lede">No coding required. You'll download this project, create a free Shopify store, and paste 3 values into one file. That's it — Shopify handles your cart, checkout, payments, shipping, and taxes automatically.</p>
+  </header>
+
+  <section class="step">
+    <p class="step-number">Step 1 of 6</p>
+    <h2>Get a copy of this project</h2>
+    <p>On the GitHub page for this project, click the green <strong>"Use this template"</strong> or <strong>"Fork"</strong> button near the top right. This creates your own personal copy that you fully own and control.</p>
+    <div class="screenshot">📸 Screenshot: the "Fork" button on the GitHub project page</div>
+    <p>Then download it to your computer. Click the green <strong>"Code"</strong> button, then <strong>"Download ZIP"</strong>, and unzip it somewhere easy to find, like your Desktop.</p>
+    <div class="screenshot">📸 Screenshot: the "Code" → "Download ZIP" menu</div>
+    <div class="checkpoint">
+      <span class="mark">✓ You should see</span>
+      <p>A folder on your computer containing files like <code>package.json</code>, <code>shopify-config.js</code>, and a <code>src</code> folder.</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="step-number">Step 2 of 6</p>
+    <h2>Create a free Shopify store and add your product</h2>
+    <p>Go to <a href="https://www.shopify.com" target="_blank" rel="noopener">shopify.com</a> and start a free trial — you don't need to enter payment details or launch a real store to follow this guide.</p>
+    <p>Once you're in your store's admin dashboard:</p>
+    <ol>
+      <li>In the left sidebar, click <strong>Products</strong>.</li>
+      <li>Click <strong>Add product</strong>.</li>
+      <li>Fill in a title, description, price, and at least one photo, then click <strong>Save</strong>.</li>
+    </ol>
+    <div class="screenshot">📸 Screenshot: the Shopify "Add product" page, filled in</div>
+    <div class="checkpoint">
+      <span class="mark">✓ You should see</span>
+      <p>Your product listed on the Products page, with a status of "Active."</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="step-number">Step 3 of 6</p>
+    <h2>Turn on the Storefront API and copy your 2 keys</h2>
+    <p>This is the part that lets your website talk to your Shopify store. It sounds technical, but it's just a few clicks:</p>
+    <ol>
+      <li>In your Shopify admin, click <strong>Settings</strong> (bottom of the left sidebar), then <strong>Apps and sales channels</strong>.</li>
+      <li>Click <strong>Develop apps</strong> (you may need to click a button to allow custom app development first — Shopify will walk you through a one-time confirmation).</li>
+      <li>Click <strong>Create an app</strong>, give it any name (e.g. "My Website"), and click <strong>Create app</strong>.</li>
+      <li>Click the <strong>Configuration</strong> tab, then <strong>Configure</strong> next to "Storefront API".</li>
+      <li>Check the boxes for reading products and reading checkouts, then click <strong>Save</strong>.</li>
+      <li>Click the <strong>API credentials</strong> tab, then <strong>Install app</strong>.</li>
+      <li>Under "Storefront API access token", click <strong>Reveal token once</strong> and copy it somewhere safe.</li>
+    </ol>
+    <div class="screenshot">📸 Screenshot: the "API credentials" tab showing the revealed Storefront token</div>
+    <p>You also need your <strong>store domain</strong> — it's the web address you use to log in, ending in <code>.myshopify.com</code> (for example <code>my-cool-shop.myshopify.com</code>).</p>
+    <p>Finally, find your <strong>product handle</strong>: go back to your product page in Shopify admin and click <strong>View</strong> (or Preview). Look at the web address — the part after <code>/products/</code> is your handle (for example, if the address ends in <code>/products/the-clear</code>, your handle is <code>the-clear</code>).</p>
+    <div class="checkpoint">
+      <span class="mark">✓ You should have</span>
+      <p>Three things written down: your store domain, your Storefront API access token, and your product handle.</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="step-number">Step 4 of 6</p>
+    <h2>Paste your 3 values into shopify-config.js</h2>
+    <p>In the project folder you downloaded, open <code>shopify-config.js</code> with any text editor (even Notepad works, though a free editor like <a href="https://code.visualstudio.com" target="_blank" rel="noopener">VS Code</a> is easier to read). You'll see this:</p>
+    <pre>const shopifyConfig = {
+  storeDomain: "",
+  storefrontAccessToken: "",
+  productHandle: "",
+};</pre>
+    <p>Paste your 3 values between the quotes, so it looks like this (using your own real values, not these examples):</p>
+    <pre>const shopifyConfig = {
+  storeDomain: "my-cool-shop.myshopify.com",
+  storefrontAccessToken: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+  productHandle: "the-clear",
+};</pre>
+    <p>Save the file.</p>
+    <div class="checkpoint">
+      <span class="mark">✓ You should see</span>
+      <p>Your 3 real values between the quotes — no more empty <code>""</code> pairs.</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="step-number">Step 5 of 6</p>
+    <h2>Preview your site on your own computer</h2>
+    <p>You'll need <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> installed first (if you're not sure, download and install it from that link — any recent version works).</p>
+    <p>Open a terminal (on Mac: Terminal app; on Windows: search for "PowerShell" or "Command Prompt") and navigate into your project folder, then run:</p>
+    <pre>npm install</pre>
+    <p>This downloads everything the site needs — it can take a minute or two, and you'll only need to do it once. Then run:</p>
+    <pre>npm run dev</pre>
+    <div class="checkpoint">
+      <span class="mark">✓ You should see</span>
+      <p>A message like <code>Local: http://localhost:3000</code>. Open that address in your browser to see your site. Try clicking "Add to bag" then "Check out" — it should take you to your Shopify checkout page.</p>
+    </div>
+  </section>
+
+  <section class="step">
+    <p class="step-number">Step 6 of 6</p>
+    <h2>Publish it online</h2>
+    <p>The easiest option is <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a> — no command line needed:</p>
+    <ol>
+      <li>Run <code>npm run build</code> in your project folder — this creates a <code>build</code> folder.</li>
+      <li>Go to <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">app.netlify.com/drop</a>.</li>
+      <li>Drag your <code>build</code> folder onto the page.</li>
+    </ol>
+    <div class="screenshot">📸 Screenshot: dragging the build folder onto Netlify Drop</div>
+    <p><a href="https://vercel.com" target="_blank" rel="noopener">Vercel</a> offers a similar drag-and-drop option if you'd rather use that instead.</p>
+    <div class="checkpoint">
+      <span class="mark">✓ You should see</span>
+      <p>A live web address (something like <code>your-site-name.netlify.app</code>) that anyone can visit.</p>
+    </div>
+  </section>
+
+  <div class="note">
+    <strong>One thing to know:</strong> because payment happens on Shopify's own checkout page, your site can't show a custom "thank you" page after someone buys — the customer sees Shopify's own order confirmation instead. This is normal and true of every site set up this way, not something broken in your setup.
+  </div>
+
+  <footer class="page-footer">
+    Questions or stuck on a step? Re-read the checkpoint for that step first — it tells you exactly what you should be seeing. If something still doesn't match, double check the values in <code>shopify-config.js</code> are pasted exactly as Shopify shows them, with no extra spaces.
+  </footer>
+</div>
+</body>
+</html>
