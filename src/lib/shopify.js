@@ -1,60 +1,98 @@
 import shopifyConfig from "../../shopify-config";
 
-const BUY_BUTTON_SCRIPT_URL = "https://sdks.shopifycdn.com/buy-button/latest/buybutton.js";
-
-let scriptLoadPromise = null;
-
-const loadShopifyScript = () => {
-  if (typeof window === "undefined") return Promise.reject(new Error("No window"));
-  if (window.ShopifyBuy) return Promise.resolve(window.ShopifyBuy);
-  if (scriptLoadPromise) return scriptLoadPromise;
-
-  scriptLoadPromise = new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = BUY_BUTTON_SCRIPT_URL;
-    script.async = true;
-    script.onload = () => {
-      if (window.ShopifyBuy) resolve(window.ShopifyBuy);
-      else reject(new Error("Shopify Buy SDK failed to load"));
-    };
-    script.onerror = () => reject(new Error("Could not load the Shopify Buy SDK script"));
-    document.head.appendChild(script);
-  });
-
-  return scriptLoadPromise;
-};
+// Storefront API version. Bump this to a newer "YYYY-MM" as Shopify releases them.
+const API_VERSION = "2026-04";
 
 export const isShopifyConfigured = () => {
   const { storeDomain, storefrontAccessToken, productHandle } = shopifyConfig;
   return Boolean(storeDomain && storefrontAccessToken && productHandle);
 };
 
-let clientPromise = null;
-
-const getClient = async () => {
-  if (clientPromise) return clientPromise;
-  clientPromise = loadShopifyScript().then((ShopifyBuy) =>
-    ShopifyBuy.buildClient({
-      domain: shopifyConfig.storeDomain,
-      storefrontAccessToken: shopifyConfig.storefrontAccessToken,
-    })
-  );
-  return clientPromise;
+// Single entry point to the Storefront GraphQL API. Everything Shopify goes
+// through here so components never talk to the API directly.
+const storefrontFetch = async (query, variables) => {
+  const { storeDomain, storefrontAccessToken } = shopifyConfig;
+  let res;
+  try {
+    res = await fetch(`https://${storeDomain}/api/${API_VERSION}/graphql.json`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Shopify-Storefront-Access-Token": storefrontAccessToken,
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+  } catch (e) {
+    throw new Error("Couldn't reach your Shopify store. Check your store domain in shopify-config.js.");
+  }
+  if (!res.ok) {
+    throw new Error(`Shopify rejected the request (${res.status}). Check your store domain and Storefront access token.`);
+  }
+  const json = await res.json();
+  if (json.errors && json.errors.length) {
+    throw new Error(json.errors[0].message || "Shopify returned an error.");
+  }
+  return json.data;
 };
 
+const PRODUCT_VARIANT_QUERY = `
+  query ProductVariant($handle: String!) {
+    product(handle: $handle) {
+      variants(first: 1) {
+        edges {
+          node {
+            id
+            availableForSale
+          }
+        }
+      }
+    }
+  }
+`;
+
+const CART_CREATE_MUTATION = `
+  mutation CartCreate($lines: [CartLineInput!]!) {
+    cartCreate(input: { lines: $lines }) {
+      cart {
+        checkoutUrl
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+// Looks up the product's first variant, creates a Shopify cart for it, and
+// returns the hosted checkout URL to redirect the buyer to. Shopify's checkout
+// handles payment, shipping, and taxes from there.
 export const buildCheckoutUrl = async ({ quantity }) => {
   if (!isShopifyConfigured()) {
     throw new Error("Shopify isn't connected yet — see guide.html");
   }
-  const client = await getClient();
-  const product = await client.product.fetchByHandle(shopifyConfig.productHandle);
-  if (!product || !product.variants || product.variants.length === 0) {
-    throw new Error(`No product found for handle "${shopifyConfig.productHandle}"`);
+
+  const productData = await storefrontFetch(PRODUCT_VARIANT_QUERY, {
+    handle: shopifyConfig.productHandle,
+  });
+  const variant = productData?.product?.variants?.edges?.[0]?.node;
+  if (!variant) {
+    throw new Error(`No product found for handle "${shopifyConfig.productHandle}".`);
   }
-  const variantId = product.variants[0].id;
-  const checkout = await client.checkout.create();
-  const updated = await client.checkout.addLineItems(checkout.id, [
-    { variantId, quantity },
-  ]);
-  return updated.webUrl;
+  if (!variant.availableForSale) {
+    throw new Error("This product is currently out of stock.");
+  }
+
+  const cartData = await storefrontFetch(CART_CREATE_MUTATION, {
+    lines: [{ merchandiseId: variant.id, quantity }],
+  });
+  const result = cartData?.cartCreate;
+  if (result?.userErrors?.length) {
+    throw new Error(result.userErrors[0].message);
+  }
+  const checkoutUrl = result?.cart?.checkoutUrl;
+  if (!checkoutUrl) {
+    throw new Error("Couldn't start checkout. Please try again.");
+  }
+  return checkoutUrl;
 };

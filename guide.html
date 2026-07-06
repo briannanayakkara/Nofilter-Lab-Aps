@@ -287,10 +287,9 @@
 <div class="wrap">
   <header class="page-header">
     <p class="eyebrow">Nofilter Lab · Store setup guide</p>
-    <h1>Get your own store running in about 15 minutes.</h1>
+    <h1>Get your own store up and running.</h1>
     <p class="lede">No coding required. You'll download this project, create a free Shopify store, and paste 3 values into one file. That's it — Shopify handles your cart, checkout, payments, shipping, and taxes automatically.</p>
     <div class="meta">
-      <span class="chip">≈ 15 minutes</span>
       <span class="chip">No coding</span>
       <span class="chip">Mac &amp; Windows</span>
       <span class="chip">Free to try</span>
@@ -397,7 +396,7 @@
       <li>Click <strong>Develop apps</strong> (you may need to click a button to allow custom app development first — Shopify will walk you through a one-time confirmation).</li>
       <li>Click <strong>Create an app</strong>, give it any name (e.g. "My Website"), and click <strong>Create app</strong>.</li>
       <li>Open the <strong>Configuration</strong> tab, then click <strong>Configure</strong> next to "Storefront API".</li>
-      <li>Tick the boxes for reading products and reading checkouts, then click <strong>Save</strong>.</li>
+      <li>Under <strong>Storefront API access scopes</strong>, tick the box to <strong>read products and collections</strong> and the box to <strong>read and modify checkouts</strong> (this is what lets the site build a cart and send buyers to checkout). Then click <strong>Save</strong>.</li>
       <li>Open the <strong>API credentials</strong> tab, then click <strong>Install app</strong>.</li>
       <li>Under "Storefront API access token", click <strong>Reveal token once</strong> and copy it somewhere safe. This is <strong>value #2</strong>.</li>
     </ol>
@@ -433,8 +432,14 @@
 
   <section class="step">
     <p class="step-number">Step 4 of 6</p>
-    <h2>Paste your 3 values into shopify-config.js</h2>
-    <p>In the project folder you downloaded, open <code>shopify-config.js</code> with any text editor (even Notepad works, though a free editor like <a href="https://code.visualstudio.com" target="_blank" rel="noopener">VS Code</a> is easier to read). You'll see this:</p>
+    <h2>Connect your 3 values</h2>
+    <p>This tells the website how to reach your store. Pick whichever option fits you — the result is identical.</p>
+
+    <div class="tip">
+      <strong>On Windows? Let the script do it for you.</strong> In the project folder, right-click <code>setup.ps1</code> and choose <strong>Run with PowerShell</strong> — or open PowerShell in the folder and type <code>.\setup.ps1</code>. It asks for your 3 values one at a time and writes the file for you, so you never touch code. (If Windows blocks the script, first run <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass</code> in that same window, then try again.) When it finishes, skip ahead to <strong>Step 5</strong>.
+    </div>
+
+    <p><strong>Prefer to do it by hand (or on a Mac)?</strong> Open <code>shopify-config.js</code> with any text editor (even Notepad works, though a free editor like <a href="https://code.visualstudio.com" target="_blank" rel="noopener">VS Code</a> is easier to read). You'll see this:</p>
     <pre>const shopifyConfig = {
   storeDomain: "",
   storefrontAccessToken: "",
