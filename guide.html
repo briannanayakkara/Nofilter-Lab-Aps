@@ -12,6 +12,10 @@
     --bone: #F2EEE8;
     --ink: #1F1F1F;
     --accent: #9AA6B2;
+    --paper: #FBFAF8;
+    --go: #256B4C;
+    --line: rgba(31,31,31,0.15);
+    --line-soft: rgba(31,31,31,0.10);
   }
   * { box-sizing: border-box; }
   body {
@@ -23,7 +27,7 @@
     line-height: 1.6;
   }
   .wrap { max-width: 760px; margin: 0 auto; padding: 64px 24px 120px; }
-  header.page-header { margin-bottom: 64px; }
+  header.page-header { margin-bottom: 40px; }
   .eyebrow {
     font-family: 'Courier Prime', monospace;
     font-size: 11px;
@@ -40,11 +44,38 @@
     margin: 0 0 20px;
   }
   .lede { font-size: 18px; opacity: 0.8; max-width: 52ch; margin: 0; }
+
+  /* meta chips under the lede */
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .chip {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    opacity: 0.75;
+  }
+
+  .primer {
+    font-size: 14px;
+    opacity: 0.7;
+    border-left: 2px solid var(--accent);
+    padding-left: 16px;
+    margin: 36px 0 8px;
+    max-width: 58ch;
+  }
+
   .step {
-    border-top: 1px solid rgba(31,31,31,0.15);
+    border-top: 1px solid var(--line);
     padding: 48px 0;
   }
-  .step:last-of-type { border-bottom: 1px solid rgba(31,31,31,0.15); }
+  .step:last-of-type { border-bottom: 1px solid var(--line); }
   .step-number {
     font-family: 'Courier Prime', monospace;
     font-size: 13px;
@@ -72,6 +103,7 @@
     font-size: 14px;
     margin: 0 0 16px;
   }
+
   .checkpoint {
     display: flex;
     gap: 12px;
@@ -90,15 +122,16 @@
     padding-top: 2px;
   }
   .checkpoint p { margin: 0; font-size: 15px; }
-  .screenshot {
-    border: 1px dashed rgba(31,31,31,0.3);
-    padding: 40px 20px;
-    text-align: center;
-    font-family: 'Courier Prime', monospace;
-    font-size: 13px;
-    opacity: 0.6;
+
+  .tip {
+    font-size: 15px;
+    background: rgba(46,125,91,0.07);
+    border-left: 2px solid var(--go);
+    padding: 14px 18px;
     margin: 20px 0;
   }
+  .tip strong { font-weight: 600; }
+
   .note {
     font-size: 14px;
     opacity: 0.65;
@@ -107,12 +140,146 @@
     margin: 16px 0;
   }
   a { color: var(--ink); }
+
+  /* ---- screen sketches (self-contained wireframes, not photos) ---- */
+  figure.mockup {
+    margin: 26px 0;
+    border: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .mockup-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: rgba(31,31,31,0.6);
+  }
+  .mockup-bar .dots { display: flex; gap: 5px; flex: none; }
+  .mockup-bar .dots i { width: 8px; height: 8px; display: block; border: 1px solid rgba(31,31,31,0.4); }
+  .mockup-bar .loc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mockup-body { padding: 22px 20px; }
+  figure.mockup figcaption {
+    padding: 0 20px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(31,31,31,0.62);
+  }
+  figure.mockup figcaption strong { color: var(--ink); font-weight: 600; }
+
+  .ui-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .ui-row.end { justify-content: flex-end; }
+  .ui-title { font-size: 16px; font-weight: 500; margin-right: auto; }
+  .ui-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 8px 13px;
+    white-space: nowrap;
+  }
+  .ui-btn.go { background: var(--go); color: #fff; border-color: var(--go); }
+  .anno {
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--go);
+    white-space: nowrap;
+  }
+  .glyph { flex: none; vertical-align: middle; }
+
+  /* dropdown menu sketch */
+  .ui-menu {
+    border: 1px solid var(--line);
+    background: #fff;
+    max-width: 340px;
+    margin: 14px 0 0 auto;
+  }
+  .ui-menu-head {
+    font-family: 'Courier Prime', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    padding: 10px 14px 6px;
+  }
+  .ui-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    font-size: 14px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .ui-menu-item.pick {
+    background: rgba(46,125,91,0.09);
+    border-left: 2px solid var(--go);
+    font-weight: 500;
+  }
+  .ui-menu-item .anno { margin-left: auto; }
+
+  /* labelled form sketch */
+  .ui-form { display: grid; gap: 14px; max-width: 460px; }
+  .ui-field { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 12px; }
+  .ui-field .lab { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.55; }
+  .ui-input {
+    border: 1px solid var(--line);
+    background: #fff;
+    padding: 9px 12px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ui-input.ghost { color: rgba(31,31,31,0.4); }
+
+  /* token row sketch */
+  .ui-token {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    border: 1px solid var(--go);
+    background: rgba(46,125,91,0.06);
+    padding: 12px 14px;
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+  }
+  .ui-token .key { flex: 1 1 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0.04em; }
+
+  /* drop zone sketch */
+  .ui-drop {
+    border: 2px dashed var(--go);
+    background: rgba(46,125,91,0.05);
+    padding: 30px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .ui-drop .big { font-size: 15px; font-weight: 500; }
+  .ui-drop .sub { font-family: 'Courier Prime', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+
   footer.page-footer {
     margin-top: 64px;
     padding-top: 32px;
-    border-top: 1px solid rgba(31,31,31,0.15);
+    border-top: 1px solid var(--line);
     font-size: 13px;
     opacity: 0.55;
+  }
+
+  @media (max-width: 600px) {
+    .mockup-body { padding: 18px 14px; }
+    .ui-field { grid-template-columns: 1fr; gap: 5px; }
+    .ui-menu { margin-left: 0; }
   }
 </style>
 </head>
@@ -122,15 +289,61 @@
     <p class="eyebrow">Nofilter Lab · Store setup guide</p>
     <h1>Get your own store running in about 15 minutes.</h1>
     <p class="lede">No coding required. You'll download this project, create a free Shopify store, and paste 3 values into one file. That's it — Shopify handles your cart, checkout, payments, shipping, and taxes automatically.</p>
+    <div class="meta">
+      <span class="chip">≈ 15 minutes</span>
+      <span class="chip">No coding</span>
+      <span class="chip">Mac &amp; Windows</span>
+      <span class="chip">Free to try</span>
+    </div>
   </header>
+
+  <p class="primer">The boxes below are simple sketches of each screen, drawn to show you where to click. The real pages may look a little different, but the buttons will be named the same — follow the names, not the exact picture.</p>
 
   <section class="step">
     <p class="step-number">Step 1 of 6</p>
     <h2>Get a copy of this project</h2>
-    <p>On the GitHub page for this project, click the green <strong>"Use this template"</strong> or <strong>"Fork"</strong> button near the top right. This creates your own personal copy that you fully own and control.</p>
-    <div class="screenshot">📸 Screenshot: the "Fork" button on the GitHub project page</div>
-    <p>Then download it to your computer. Click the green <strong>"Code"</strong> button, then <strong>"Download ZIP"</strong>, and unzip it somewhere easy to find, like your Desktop.</p>
-    <div class="screenshot">📸 Screenshot: the "Code" → "Download ZIP" menu</div>
+    <p>On the GitHub page for this project, look near the top right for a green <strong>"Use this template"</strong> button (or <strong>"Fork"</strong>). Either one makes your own personal copy that you fully own and control.</p>
+
+    <figure class="mockup">
+      <div class="mockup-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="loc">github.com/your-name/nofilter-lab</span>
+      </div>
+      <div class="mockup-body">
+        <div class="ui-row">
+          <span class="ui-title">nofilter-lab</span>
+          <span class="ui-btn">Fork</span>
+          <span class="ui-btn go">Use this template</span>
+          <span class="anno">← either one</span>
+        </div>
+      </div>
+      <figcaption>The top of the project's GitHub page. Click <strong>Use this template</strong> (or <strong>Fork</strong>) to create your own copy.</figcaption>
+    </figure>
+
+    <p>Now download that copy to your computer: click the green <strong>"Code"</strong> button, then <strong>"Download ZIP"</strong> in the menu that appears. Unzip the downloaded file somewhere easy to find, like your Desktop.</p>
+
+    <figure class="mockup">
+      <div class="mockup-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="loc">github.com/your-name/nofilter-lab</span>
+      </div>
+      <div class="mockup-body">
+        <div class="ui-row end">
+          <span class="ui-btn go">&lt;&gt; Code ▾</span>
+        </div>
+        <div class="ui-menu">
+          <div class="ui-menu-head">Clone</div>
+          <div class="ui-menu-item">HTTPS · SSH · GitHub CLI</div>
+          <div class="ui-menu-item pick">
+            <svg class="glyph" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v11m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+            Download ZIP
+            <span class="anno">← click this</span>
+          </div>
+        </div>
+      </div>
+      <figcaption>The menu that drops down from the green <strong>Code</strong> button. Choose <strong>Download ZIP</strong>.</figcaption>
+    </figure>
+
     <div class="checkpoint">
       <span class="mark">✓ You should see</span>
       <p>A folder on your computer containing files like <code>package.json</code>, <code>shopify-config.js</code>, and a <code>src</code> folder.</p>
@@ -147,7 +360,26 @@
       <li>Click <strong>Add product</strong>.</li>
       <li>Fill in a title, description, price, and at least one photo, then click <strong>Save</strong>.</li>
     </ol>
-    <div class="screenshot">📸 Screenshot: the Shopify "Add product" page, filled in</div>
+
+    <figure class="mockup">
+      <div class="mockup-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="loc">Shopify admin · Products · Add product</span>
+      </div>
+      <div class="mockup-body">
+        <div class="ui-form">
+          <div class="ui-field"><span class="lab">Title</span><span class="ui-input">THE CLEAR</span></div>
+          <div class="ui-field"><span class="lab">Price</span><span class="ui-input">349.00 DKK</span></div>
+          <div class="ui-field"><span class="lab">Media</span><span class="ui-input ghost">＋ Add a photo</span></div>
+        </div>
+        <div class="ui-row end" style="margin-top:18px">
+          <span class="ui-btn go">Save</span>
+          <span class="anno">← saves the product</span>
+        </div>
+      </div>
+      <figcaption>The <strong>Add product</strong> page. Fill in a title, price, and photo, then <strong>Save</strong>.</figcaption>
+    </figure>
+
     <div class="checkpoint">
       <span class="mark">✓ You should see</span>
       <p>Your product listed on the Products page, with a status of "Active."</p>
@@ -156,20 +388,43 @@
 
   <section class="step">
     <p class="step-number">Step 3 of 6</p>
-    <h2>Turn on the Storefront API and copy your 2 keys</h2>
-    <p>This is the part that lets your website talk to your Shopify store. It sounds technical, but it's just a few clicks:</p>
+    <h2>Turn on the Storefront API and collect your 3 values</h2>
+    <p>This is the part that lets your website talk to your Shopify store, and it's the only slightly technical step — take it slowly and you'll be fine. By the end you'll have written down <strong>three things</strong>: your store domain, an access token, and your product handle.</p>
+
+    <p><strong>First, create an app to get your access token:</strong></p>
     <ol>
       <li>In your Shopify admin, click <strong>Settings</strong> (bottom of the left sidebar), then <strong>Apps and sales channels</strong>.</li>
       <li>Click <strong>Develop apps</strong> (you may need to click a button to allow custom app development first — Shopify will walk you through a one-time confirmation).</li>
       <li>Click <strong>Create an app</strong>, give it any name (e.g. "My Website"), and click <strong>Create app</strong>.</li>
-      <li>Click the <strong>Configuration</strong> tab, then <strong>Configure</strong> next to "Storefront API".</li>
-      <li>Check the boxes for reading products and reading checkouts, then click <strong>Save</strong>.</li>
-      <li>Click the <strong>API credentials</strong> tab, then <strong>Install app</strong>.</li>
-      <li>Under "Storefront API access token", click <strong>Reveal token once</strong> and copy it somewhere safe.</li>
+      <li>Open the <strong>Configuration</strong> tab, then click <strong>Configure</strong> next to "Storefront API".</li>
+      <li>Tick the boxes for reading products and reading checkouts, then click <strong>Save</strong>.</li>
+      <li>Open the <strong>API credentials</strong> tab, then click <strong>Install app</strong>.</li>
+      <li>Under "Storefront API access token", click <strong>Reveal token once</strong> and copy it somewhere safe. This is <strong>value #2</strong>.</li>
     </ol>
-    <div class="screenshot">📸 Screenshot: the "API credentials" tab showing the revealed Storefront token</div>
-    <p>You also need your <strong>store domain</strong> — it's the web address you use to log in, ending in <code>.myshopify.com</code> (for example <code>my-cool-shop.myshopify.com</code>).</p>
-    <p>Finally, find your <strong>product handle</strong>: go back to your product page in Shopify admin and click <strong>View</strong> (or Preview). Look at the web address — the part after <code>/products/</code> is your handle (for example, if the address ends in <code>/products/the-clear</code>, your handle is <code>the-clear</code>).</p>
+
+    <figure class="mockup">
+      <div class="mockup-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="loc">Shopify admin · Apps · API credentials</span>
+      </div>
+      <div class="mockup-body">
+        <div class="ui-field" style="grid-template-columns:1fr; gap:8px; max-width:none">
+          <span class="lab">Storefront API access token</span>
+          <div class="ui-token">
+            <span class="key">a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6</span>
+            <span class="ui-btn" style="border-color:var(--go); color:var(--go)">Reveal token once</span>
+          </div>
+        </div>
+      </div>
+      <figcaption>The <strong>API credentials</strong> tab. Click <strong>Reveal token once</strong> and copy the long string — that's your access token.</figcaption>
+    </figure>
+
+    <p><strong>Then collect the other two values:</strong></p>
+    <ul>
+      <li><strong>Value #1 — your store domain:</strong> the web address you use to log in, ending in <code>.myshopify.com</code> (for example <code>my-cool-shop.myshopify.com</code>).</li>
+      <li><strong>Value #3 — your product handle:</strong> open your product in Shopify admin and click <strong>View</strong> (or Preview). In the web address, the part after <code>/products/</code> is your handle — e.g. if it ends in <code>/products/the-clear</code>, your handle is <code>the-clear</code>.</li>
+    </ul>
+
     <div class="checkpoint">
       <span class="mark">✓ You should have</span>
       <p>Three things written down: your store domain, your Storefront API access token, and your product handle.</p>
@@ -191,7 +446,7 @@
   storefrontAccessToken: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
   productHandle: "the-clear",
 };</pre>
-    <p>Save the file.</p>
+    <p>Save the file. Keep the quotes and commas exactly as they are — only the text inside the quotes changes.</p>
     <div class="checkpoint">
       <span class="mark">✓ You should see</span>
       <p>Your 3 real values between the quotes — no more empty <code>""</code> pairs.</p>
@@ -201,10 +456,16 @@
   <section class="step">
     <p class="step-number">Step 5 of 6</p>
     <h2>Preview your site on your own computer</h2>
-    <p>You'll need <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> installed first (if you're not sure, download and install it from that link — any recent version works).</p>
-    <p>Open a terminal (on Mac: Terminal app; on Windows: search for "PowerShell" or "Command Prompt") and navigate into your project folder, then run:</p>
+    <p>First install <a href="https://nodejs.org" target="_blank" rel="noopener">Node.js</a> (if you're not sure whether you have it, just download and install it from that link — any recent version works). It's a free, one-time install.</p>
+    <p>Then open a terminal — on Mac, open the <strong>Terminal</strong> app; on Windows, search the Start menu for <strong>PowerShell</strong>. A terminal is just a window where you type commands.</p>
+
+    <div class="tip">
+      <strong>Getting the terminal into your project folder:</strong> type <code>cd</code> followed by a single space, then drag your unzipped project folder from your file explorer onto the terminal window and press Enter. That moves the terminal into the folder without you having to type out the whole path.
+    </div>
+
+    <p>Now type this and press Enter — it downloads everything the site needs (a minute or two, and only needed once):</p>
     <pre>npm install</pre>
-    <p>This downloads everything the site needs — it can take a minute or two, and you'll only need to do it once. Then run:</p>
+    <p>Then type this and press Enter to start your site:</p>
     <pre>npm run dev</pre>
     <div class="checkpoint">
       <span class="mark">✓ You should see</span>
@@ -215,13 +476,28 @@
   <section class="step">
     <p class="step-number">Step 6 of 6</p>
     <h2>Publish it online</h2>
-    <p>The easiest option is <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a> — no command line needed:</p>
+    <p>The easiest option is <a href="https://www.netlify.com/" target="_blank" rel="noopener">Netlify</a> — no command line needed after the first build:</p>
     <ol>
-      <li>Run <code>npm run build</code> in your project folder — this creates a <code>build</code> folder.</li>
+      <li>Back in the terminal, type <code>npm run build</code> and press Enter — this creates a <code>build</code> folder inside your project.</li>
       <li>Go to <a href="https://app.netlify.com/drop" target="_blank" rel="noopener">app.netlify.com/drop</a>.</li>
       <li>Drag your <code>build</code> folder onto the page.</li>
     </ol>
-    <div class="screenshot">📸 Screenshot: dragging the build folder onto Netlify Drop</div>
+
+    <figure class="mockup">
+      <div class="mockup-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="loc">app.netlify.com/drop</span>
+      </div>
+      <div class="mockup-body">
+        <div class="ui-drop">
+          <svg class="glyph" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--go)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h6l2 2h10v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/></svg>
+          <span class="big">Drag your <code style="background:none;padding:0">build</code> folder here</span>
+          <span class="sub">Drop to deploy</span>
+        </div>
+      </div>
+      <figcaption>The <strong>Netlify Drop</strong> page. Drag the whole <strong>build</strong> folder onto it — Netlify puts your site online in seconds.</figcaption>
+    </figure>
+
     <p><a href="https://vercel.com" target="_blank" rel="noopener">Vercel</a> offers a similar drag-and-drop option if you'd rather use that instead.</p>
     <div class="checkpoint">
       <span class="mark">✓ You should see</span>
