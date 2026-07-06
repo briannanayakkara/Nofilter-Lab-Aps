@@ -1,18 +1,8 @@
 ---
 name: testing-patterns
-description: Backend test conventions for this repo (pytest, requests-against-live-server style) and a scaffold generator. Use before writing a new backend test file or test class.
+description: Notes on this repo's (lack of) test tooling. Use before assuming a test framework exists that doesn't.
 ---
 
-Backend tests (`backend/tests/`) are integration-style: they run `requests` calls against a live server at `$REACT_APP_BACKEND_URL`, not FastAPI's `TestClient`, and use a direct `pymongo` connection for persistence assertions. Test classes are grouped by feature (`TestProduct`, `TestWaitlist`, etc.), one method per case.
+This project has no automated test framework — no backend (nothing to run tests against) and no frontend component test framework (`@testing-library/react` is not installed, though the default Craco/`react-scripts test` runner scaffold is present via `npm test`).
 
-`pytest.ini` pins `-n 2 --dist loadscope` (pytest-xdist) — **do not change `addopts`**; tests within a class/module run on the same worker, but classes/modules can run in parallel, so don't rely on cross-class ordering or shared mutable state beyond what a fixture scopes explicitly.
-
-To scaffold a new test class matching this repo's conventions, run:
-
-```
-python .claude/skills/testing-patterns/scripts/gen-test.py <FeatureName> <METHOD> <path>
-```
-
-e.g. `python .claude/skills/testing-patterns/scripts/gen-test.py Checkout POST /api/checkout/quote` prints a `TestCheckout` class skeleton to stdout — review and fill in real assertions before adding it to a test file; it's a starting point, not a finished test.
-
-Frontend has no test suite yet beyond the default Craco/`react-scripts test` runner scaffold — there's no established pattern to follow there yet, so don't invent one silently; flag it if a frontend test is needed.
+Verify changes via: `npm run build` (or `npm run dev`) compiling cleanly, ESLint, and manual browser QA. Don't invent a test framework or write tests against a harness that isn't set up — flag it instead if real test coverage becomes necessary.

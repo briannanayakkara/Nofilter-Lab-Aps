@@ -14,10 +14,10 @@ The chosen approach, and briefly why (if alternatives were considered).
 2. ...
 
 ## Data model changes
-New/changed Mongo collections or fields, if any. Reference `.claude/skills/mongo-patterns/` for conventions.
+N/A — this project has no database; product data lives in the forker's own Shopify store.
 
 ## Test plan
-What in `backend/tests/` gets added/updated. Reference `.claude/skills/testing-patterns/`.
+This project has no automated test framework (verify via `npm run build`/`npm run dev` compiling cleanly, ESLint, and manual browser QA). Reference `.claude/skills/testing-patterns/`.
 
 ## Open questions
 Anything that needs a decision before implementation starts — don't guess and bury the assumption in code.
